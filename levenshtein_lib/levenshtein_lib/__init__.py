@@ -6,6 +6,7 @@ lib = _get_shared_lib_location(__file__)
 
 __version__ = "0.1.0"
 
+
 @pl.api.register_expr_namespace("dist")
 class LevenshteinDistance:
     def __init__(self, expr: pl.Expr) -> None:

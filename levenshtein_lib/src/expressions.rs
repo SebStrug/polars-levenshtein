@@ -20,6 +20,7 @@ fn levenshtein_distance(str_a: &str, str_b: &str) -> i32 {
 
     for i in 1..=len_a {
         for j in 1..=len_b {
+            // using `.nth` makes this a naive implementation since it always starts from 0th index
             let cost = if str_a.chars().nth(i - 1).unwrap() == str_b.chars().nth(j - 1).unwrap() {
                 0
             } else {
@@ -36,17 +37,46 @@ fn levenshtein_distance(str_a: &str, str_b: &str) -> i32 {
 
 fn levenshtein_ratio(str_a: &str, str_b: &str) -> f64 {
     let levenshtein_dist = levenshtein_distance(str_a, str_b);
-    return 1.0
-        - (levenshtein_dist.to_f64().unwrap() / max(str_a.len(), str_b.len()).to_f64().unwrap());
+    let greatest_str = max(str_a.len(), str_b.len()).to_f64().unwrap();
+    if greatest_str == 0.0 {
+        return 1.0;
+    }
+    return 1.0 - levenshtein_dist.to_f64().unwrap() / greatest_str;
 }
 
 #[polars_expr(output_type=Float64)]
 fn get_levenshtein_ratio(inputs: &[Series]) -> PolarsResult<Series> {
     // 0th index is the column operated on
     let a = inputs[0].utf8()?;
-    // 1 index is the passed in value
+    // 1 index is the other column passed
     let b = inputs[1].utf8()?;
 
     let out: Float64Chunked = arity::binary_elementwise_values(a, b, levenshtein_ratio);
     Ok(out.into_series())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_levenshtein_distance() {
+        assert_eq!(levenshtein_distance("apple", "apple"), 0);
+        assert_eq!(levenshtein_distance("Apple", "apple"), 1);
+        assert_eq!(levenshtein_distance("", ""), 0);
+        assert_eq!(levenshtein_distance("", "apple"), 5);
+        assert_eq!(levenshtein_distance("apple", "aple"), 1);
+        assert_eq!(levenshtein_distance("apple", "appl"), 1);
+        assert_eq!(levenshtein_distance("apple", "applle"), 1);
+        assert_eq!(levenshtein_distance("apple", "bpple"), 1);
+        assert_eq!(levenshtein_distance("apple", "elppa"), 4);
+    }
+
+    #[test]
+    fn test_levenshtein_ratio() {
+        assert_eq!(levenshtein_ratio("apple", "apple"), 1.0);
+        assert_eq!(levenshtein_ratio("Apple", "apple"), 0.8);
+        assert_eq!(levenshtein_ratio("", ""), 1.0);
+        assert_eq!(levenshtein_ratio("", "apple"), 0.0);
+    }
 }

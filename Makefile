@@ -21,3 +21,6 @@ run: install
 
 run-release: install-release
 	source venv/bin/activate && python run.py
+
+benchmark: install-release
+	source venv/bin/activate && python benchmark.py

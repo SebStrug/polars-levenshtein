@@ -1,2 +1,6 @@
 maturin
 polars
+
+# required for benchmark script
+rapidfuzz
+matplotlib
