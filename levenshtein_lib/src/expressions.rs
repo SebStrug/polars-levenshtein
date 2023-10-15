@@ -1,0 +1,52 @@
+use polars::prelude::*;
+use pyo3_polars::{derive::polars_expr, export::polars_core::export::num::ToPrimitive};
+use std::cmp::max;
+use std::cmp::min;
+
+fn levenshtein_distance(str_a: &str, str_b: &str) -> i32 {
+    let len_a = str_a.len();
+    let len_b = str_b.len();
+
+    // Consider empty string as a starting point, so grid is one larger than both strings
+    let mut vec = vec![vec![0; len_b + 1]; len_a + 1];
+
+    for i in 0..=len_a {
+        vec[i][0] = i as i32;
+    }
+
+    for j in 0..=len_b {
+        vec[0][j] = j as i32;
+    }
+
+    for i in 1..=len_a {
+        for j in 1..=len_b {
+            let cost = if str_a.chars().nth(i - 1).unwrap() == str_b.chars().nth(j - 1).unwrap() {
+                0
+            } else {
+                1
+            };
+            vec[i][j] = min(
+                vec[i - 1][j] + 1,
+                min(vec[i][j - 1] + 1, vec[i - 1][j - 1] + cost),
+            );
+        }
+    }
+    return vec[len_a][len_b];
+}
+
+fn levenshtein_ratio(str_a: &str, str_b: &str) -> f64 {
+    let levenshtein_dist = levenshtein_distance(str_a, str_b);
+    return 1.0
+        - (levenshtein_dist.to_f64().unwrap() / max(str_a.len(), str_b.len()).to_f64().unwrap());
+}
+
+#[polars_expr(output_type=Float64)]
+fn get_levenshtein_ratio(inputs: &[Series]) -> PolarsResult<Series> {
+    // 0th index is the column operated on
+    let a = inputs[0].utf8()?;
+    // 1 index is the passed in value
+    let b = inputs[1].utf8()?;
+
+    let out: Float64Chunked = arity::binary_elementwise_values(a, b, levenshtein_ratio);
+    Ok(out.into_series())
+}

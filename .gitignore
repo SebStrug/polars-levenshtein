@@ -1,0 +1,4 @@
+venv/
+levenshtein_lib/levenshtein_lib/__pycache__/*
+levenshtein_lib/levenshtein_lib/*.cpython*
+levenshtein_lib/target/
