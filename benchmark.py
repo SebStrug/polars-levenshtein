@@ -24,7 +24,7 @@ single_df = pl.DataFrame(
     }
 )
 
-df_rows_tests = (5 * 10**2,)  # , 5*10**3, 5*10**4, 5*10**5, 5*10**6)
+df_rows_tests = (5 * 10**2, 5*10**3, 5*10**4, 5*10**5, 5*10**6)
 rust_times = []
 rapidfuzz_times = []
 
@@ -59,6 +59,5 @@ plt.plot(
 )
 plt.xlabel("Log(10) of the number of dataframe rows")
 plt.ylabel("Number of seconds to compute levenshtein ratio")
-plt.title("Two Lines on One Graph")
 plt.legend()
 plt.show()
