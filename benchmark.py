@@ -24,7 +24,7 @@ single_df = pl.DataFrame(
     }
 )
 
-df_rows_tests = (5 * 10**2, 5*10**3, 5*10**4, 5*10**5, 5*10**6)
+df_rows_tests = (5 * 10**2, 5*10**3, 5*10**4, 5*10**5, 5*10**6, 1*10**7)
 rust_times = []
 rapidfuzz_times = []
 
